@@ -1,21 +1,23 @@
 {
-  "name": "noom",
+  "name": "zoom",
   "version": "1.0.0",
-  "description": "Zoom Clone using NodeJS, WebRTC and Websockets.",
+  "description": "zoom clone using WebRTC & Webgitsockets",
+  "author": "JYKim",
   "license": "MIT",
   "scripts": {
     "dev": "nodemon"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.5",
-    "@babel/core": "^7.14.6",
-    "@babel/node": "^7.14.7",
-    "@babel/preset-env": "^7.14.7",
-    "nodemon": "^2.0.12"
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.7",
+    "@babel/node": "^7.20.7",
+    "@babel/preset-env": "^7.20.2",
+    "nodemon": "^2.0.20"
   },
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.18.2",
+    "git": "^0.1.5",
     "pug": "^3.0.2",
-    "ws": "^7.5.3"
+    "ws": "^8.11.0"
   }
 }
