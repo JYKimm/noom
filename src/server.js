@@ -1,5 +1,6 @@
 import http from "http";
-import WebSocket from "ws";
+// import WebSocket from "ws";
+import SocketIO from "socket.io";
 import express from "express";
 
 const app = express();
@@ -13,14 +14,18 @@ app.use("/public", express.static(__dirname + "/public"));
 app.get("/", (req, res) => res.render("home"));// 유저가 보는 퍼블릭코드 
 app.get("/*", (req, res) => res.redirect("/"));//catchall 무조건 이리 보냄
 
-const handleListen = () => console.log('Listening on http://localhost:3000'); 
-// app.listen(3200, handleListen);
+const httpServer = http.createServer(app);//http server from express
+const wsServer = SocketIO(httpServer);
 
-const server = http.createServer(app);//http server from express
+wsServer.on("connection", (socket) => {
+  console.log(socket);
+});
+
+
+/* 
+// webSocket code
 const wss = new WebSocket.Server({ server });//http, websocket server 둘다 만듬
-
 const sockets =[];
-
 wss.on("connection", (socket) => {//socket = 연결된 브라우저
     sockets.push(socket);
     console.log(sockets.length)
@@ -40,6 +45,7 @@ wss.on("connection", (socket) => {//socket = 연결된 브라우저
             socket["nickname"] = message.payload;
         }
       });
-});
+}); */
 
-server.listen(3000, handleListen);
+const handleListen = () => console.log('Listening on http://localhost:3000'); 
+httpServer.listen(3000, handleListen); 
