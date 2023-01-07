@@ -18,7 +18,12 @@ const httpServer = http.createServer(app);//http server from express
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
-  console.log(socket);
+  socket.on("enter_room", (msg, done) => {
+    console.log(msg)
+    setTimeout(() => {
+      done();//frontend가 보내고 done으로 받은 함수를 여기서 호출하면 frontend에서 실행됨
+    }, 3000);
+  });  
 });
 
 
