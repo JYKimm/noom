@@ -17,6 +17,27 @@ app.get("/*", (req, res) => res.redirect("/"));//catchall 무조건 이리 보�
 const httpServer = http.createServer(app);//http server from express
 const wsServer = SocketIO(httpServer);
 
+function publicRooms(){
+  const {
+    sockets: {
+      adapter: {sids, rooms},
+    },
+  } = wsServer;
+   // const sids = wsServer.sockets.adapter.sids;
+  // const rooms = wsServer.sockets.adapter.rooms;
+  const publicRooms = [];
+  rooms.forEach((_, key) => {
+    if(sids.get(key) === undefined){
+      publicRooms.push(key)
+    }
+  });
+  return publicRooms; 
+ }
+
+ function countRoom(roomName){
+  return wsServer.sockets.adapter.rooms.get(roomName).size; 
+ }
+ 
 wsServer.on("connection", (socket) => {
   socket["nickname"] = "Anon";
   socket.onAny((event)=>{
@@ -26,7 +47,8 @@ wsServer.on("connection", (socket) => {
     socket.join(roomName);
     //frontend가 보내고 done으로 받은 함수를 여기서 호출하면 frontend에서 실행됨
     done();
-    socket.to(roomName).emit("welcome", socket.nickname);
+    socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
+    wsServer.sockets.emit("room_change", publicRooms());
   });  
   socket.on("nickname", (nickname)=>{
     socket["nickname"] = nickname;
@@ -37,10 +59,18 @@ wsServer.on("connection", (socket) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
     done();
   })
+  // just before leaving
   socket.on("disconnecting", ()=>{
-    socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
+    socket.rooms.forEach((room) => 
+      socket.to(room).emit("bye", socket.nickname, countRoom(room)-1)
+      );
+    // wsServer.sockets.emit("room_change", publicRooms());
+  });
+  // after leaving
+  socket.on("disconnect", ()=>{
+    wsServer.sockets.emit("room_change", publicRooms());
   });
 });
-
+  
 const handleListen = () => console.log('Listening on http://localhost:3000'); 
 httpServer.listen(3000, handleListen); 

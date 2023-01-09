@@ -54,14 +54,30 @@ function addMessage(message){
 
 form.addEventListener("submit", hRoomSubmit);
 
-
-socket.on("welcome", (user)=>{
+socket.on("welcome", (user, num)=>{
     addMessage(`${user} joined`);
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName} (${num})`;
 });
-socket.on("bye", (user)=>{
+socket.on("bye", (user, num)=>{
     addMessage(`${user} left`);
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName} (${num})`;
 });
 // socket.on("new_message", (message)=>{
 //     addMessage(message);
 // });
 socket.on("new_message", addMessage);
+
+socket.on("room_change", (rooms)=>{
+    const roomList = welcome.querySelector("ul");
+    roomList.innerText = "";
+    // if(rooms.length === 0){
+    //     return;
+    // }
+    rooms.forEach(room=>{
+        const li = document.createElement("li");
+        li.innerText = room;
+        roomList.append(li);
+    })
+});
