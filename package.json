@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.20.7",
-    "@babel/core": "^7.20.7",
+    "@babel/core": "^7.20.12",
     "@babel/node": "^7.20.7",
     "@babel/preset-env": "^7.20.2",
     "nodemon": "^2.0.20"
@@ -21,5 +21,15 @@
     "pug": "^3.0.2",
     "socket.io": "^4.5.4",
     "ws": "^8.11.0"
-  }
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JYKimm/noom.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/JYKimm/noom/issues"
+  },
+  "homepage": "https://github.com/JYKimm/noom#readme"
 }
