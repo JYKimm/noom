@@ -18,39 +18,29 @@ const httpServer = http.createServer(app);//http server from express
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
-  socket.on("enter_room", (msg, done) => {
-    console.log(msg)
-    setTimeout(() => {
-      done();//frontend가 보내고 done으로 받은 함수를 여기서 호출하면 frontend에서 실행됨
-    }, 3000);
+  socket["nickname"] = "Anon";
+  socket.onAny((event)=>{
+    console.log(`socket event:${event}`);
+  });
+  socket.on("enter_room", (roomName, done) => {
+    socket.join(roomName);
+    //frontend가 보내고 done으로 받은 함수를 여기서 호출하면 frontend에서 실행됨
+    done();
+    socket.to(roomName).emit("welcome", socket.nickname);
   });  
+  socket.on("nickname", (nickname)=>{
+    socket["nickname"] = nickname;
+    console.log("name:", socket["nickname"])
+    console.log("name:", nickname)
+  })
+  socket.on("new_message", (msg, room, done) => {
+    socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
+    done();
+  })
+  socket.on("disconnecting", ()=>{
+    socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
+  });
 });
-
-
-/* 
-// webSocket code
-const wss = new WebSocket.Server({ server });//http, websocket server 둘다 만듬
-const sockets =[];
-wss.on("connection", (socket) => {//socket = 연결된 브라우저
-    sockets.push(socket);
-    console.log(sockets.length)
-    console.log("connected to BROWSER");
-    socket.on("close", ()=>{
-        // sockets.pop(socket);
-        console.log("Disconnected from BROWSER");
-    });
-    socket.on("message", (msg) => {
-        const message = JSON.parse(msg);
-        switch (message.type) {
-          case "new_message":
-            sockets.forEach((aSocket) =>
-              aSocket.send(`${socket.nickname}: ${message.payload}`)
-            );
-          case "nickname":
-            socket["nickname"] = message.payload;
-        }
-      });
-}); */
 
 const handleListen = () => console.log('Listening on http://localhost:3000'); 
 httpServer.listen(3000, handleListen); 
