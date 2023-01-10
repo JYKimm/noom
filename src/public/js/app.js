@@ -3,11 +3,15 @@ const myFace = document.getElementById("myFace");
 const muteBtm = document.getElementById("mute");
 const cameraBtm = document.getElementById("camera");
 const camerasSelect = document.getElementById("cameras");
+const call = document.getElementById("call");
+
+call.hidden = true;
 
 let myStream;
 let muted = false;
 let cameraOff = false;
-
+let roomName;
+let myPeerConnection;
 
 async function getCameras(){
     try{
@@ -94,4 +98,63 @@ muteBtm.addEventListener("click", hMuteClick);
 cameraBtm.addEventListener("click", hCameraClick);
 camerasSelect.addEventListener("input", hCamChange);
 
-getMedia();
+///////////////////////// welcome form
+
+const welcome = document.getElementById("welcome");
+welcomeForm = welcome.querySelector("form");
+
+// getMedia();
+async function initCall(){
+    welcome.hidden = true;
+    call.hidden = false;
+    await getMedia();
+    makeConnection();
+}
+
+async function hWelcomeSubmit(event){
+    event.preventDefault();
+    const input = welcomeForm.querySelector("input");
+    await initCall();//very fast
+    socket.emit("join_room", input.value);
+    roomName = input.value;
+    input.value="";
+
+}
+
+
+welcomeForm.addEventListener("submit", hWelcomeSubmit);
+
+//socket codes
+
+//Peer A (먼저 들어온 쪽)에서만 실행됨.
+socket.on("welcome", async ()=>{
+    console.log("joined someone");//누군가 왔으므로 접속 오퍼를 보낸다.
+    const offer = await myPeerConnection.createOffer();
+    myPeerConnection.setLocalDescription(offer);
+    console.log("send offer:", offer);
+    //socketio로 offer를 보낸다.
+    socket.emit("offer", offer, roomName);
+})
+
+//Peer B (나중쪽)에서만 실행
+socket.on("offer", offer =>{
+    console.log("receive offer:", offer);
+    //after receiving  offer,,,
+    myPeerConnection.setRemoteDescription(offer);
+    const answer = myPeerConnection.createAnswer();
+    console.log(answer);
+    myPeerConnection.setLocalDescription(answer);
+    socket.emit("answer", answer, roomName);
+});
+
+//peer a
+socket.on("answer", (answer) =>{
+    myPeerConnection.setRemoteDescription(answer);
+})
+// rtc codes
+function makeConnection(){
+    myPeerConnection = new RTCPeerConnection();
+    // console.log(myStream.getTracks())
+    myStream.getTracks().forEach(track=>myPeerConnection.addTrack(track, myStream));
+
+}
