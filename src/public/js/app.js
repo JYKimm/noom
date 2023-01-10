@@ -119,7 +119,7 @@ async function hWelcomeSubmit(event){
     roomName = input.value;
     input.value="";
 
-}
+};
 
 
 welcomeForm.addEventListener("submit", hWelcomeSubmit);
@@ -134,14 +134,14 @@ socket.on("welcome", async ()=>{
     console.log("send offer:", offer);
     //socketio로 offer를 보낸다.
     socket.emit("offer", offer, roomName);
-})
+});
 
 //Peer B (나중쪽)에서만 실행
-socket.on("offer", offer =>{
+socket.on("offer", async (offer) =>{
     console.log("receive offer:", offer);
     //after receiving  offer,,,
     myPeerConnection.setRemoteDescription(offer);
-    const answer = myPeerConnection.createAnswer();
+    const answer = await myPeerConnection.createAnswer();
     console.log(answer);
     myPeerConnection.setLocalDescription(answer);
     socket.emit("answer", answer, roomName);
@@ -149,12 +149,13 @@ socket.on("offer", offer =>{
 
 //peer a
 socket.on("answer", (answer) =>{
+    console.log("answer:",answer);//answer from peer a
     myPeerConnection.setRemoteDescription(answer);
-})
+});
+
 // rtc codes
 function makeConnection(){
     myPeerConnection = new RTCPeerConnection();
     // console.log(myStream.getTracks())
     myStream.getTracks().forEach(track=>myPeerConnection.addTrack(track, myStream));
-
-}
+};
