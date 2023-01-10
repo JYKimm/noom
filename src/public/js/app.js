@@ -91,6 +91,13 @@ function hCameraClick(){
 async function hCamChange(){
     console.log(camerasSelect.value);
     await getMedia(camerasSelect.value);
+    if(myPeerConnection()){
+        const videoTrack = myStream.getVideoTracks()[0];
+        const videoSender = myPeerConnection
+            .getSenders()
+            .find((sender)=>{sender.track.kind ==="video"});
+        videoSender.replaceTrack(videoTrack);
+    }
 }
 
 
@@ -145,17 +152,38 @@ socket.on("offer", async (offer) =>{
     console.log(answer);
     myPeerConnection.setLocalDescription(answer);
     socket.emit("answer", answer, roomName);
-});
+    console.log("send answer");
+}); 
 
 //peer a
 socket.on("answer", (answer) =>{
-    console.log("answer:",answer);//answer from peer a
+    console.log("rcv answer:",answer);//answer from peer a
     myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) =>{
+    console.log("rcvd candid.");
+    myPeerConnection.addIceCandidate(ice);
 });
 
 // rtc codes
 function makeConnection(){
     myPeerConnection = new RTCPeerConnection();
-    // console.log(myStream.getTracks())
-    myStream.getTracks().forEach(track=>myPeerConnection.addTrack(track, myStream));
+    myPeerConnection.addEventListener("icecandidate", hIce);
+    myPeerConnection.addEventListener("addstream", hAddStream);
+    myStream
+        .getTracks()
+        .forEach((track) => myPeerConnection.addTrack(track, myStream));
 };
+
+function hIce(data){
+    socket.emit("ice", data.candidate, roomName);
+    console.log("sent candid.");
+}
+
+function hAddStream(data){
+    console.log("peer's stream:", data.stream);    
+    console.log("my stream:", myStream);    
+    const peerFace = document.getElementById("peerFace");
+    peerFace.srcObject=data.stream;
+}
