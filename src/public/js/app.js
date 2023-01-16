@@ -91,12 +91,14 @@ function hCameraClick(){
 async function hCamChange(){
     console.log(camerasSelect.value);
     await getMedia(camerasSelect.value);
-    if(myPeerConnection()){
+    if(myPeerConnection){
         const videoTrack = myStream.getVideoTracks()[0];
-        const videoSender = myPeerConnection
-            .getSenders()
-            .find((sender)=>{sender.track.kind ==="video"});
+        const videoSender = myPeerConnection.getSenders().find(sender => sender.track.kind ==="video");
+        
+        console.log('myPeerConnection:',myPeerConnection);
+        console.log('videoSender:',videoSender);
         videoSender.replaceTrack(videoTrack);
+        
     }
 }
 
